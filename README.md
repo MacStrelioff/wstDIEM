@@ -38,4 +38,6 @@ The app does not require environment variables for the current landing page.
 
 ## Project planning
 
-- [wstDIEM Protocol Plan](docs/wstdiem-protocol-plan.md) — architecture and phased roadmap for wrapping staked Venice DIEM and syncing inference allowance to `wstDIEM` balances.
+- [wstDIEM Protocol Plan](docs/wstdiem-protocol-plan.md) — concise protocol overview and V1/V2 scope.
+- [wstDIEM MVP Architecture](docs/wstdiem-mvp-architecture.md) — full MVP design from DIEM deposit/stake through Venice inference usage and 24h redemption.
+- [Venice DIEM Contract and API Research](docs/references/venice-diem-contract-and-api-research.md) — source-backed DIEM contract, on-chain transaction, and Venice API references.
