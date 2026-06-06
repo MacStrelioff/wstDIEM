@@ -48,7 +48,7 @@ async function sendTx(to, data) {
 
 function requireV1() {
   if (!LIVE_CONFIG.v1Vault || !LIVE_CONFIG.v1WstDiem) {
-    throw new Error('V1 contracts are not deployed/configured yet.');
+    throw new Error('Key-dashboard balance-source contracts are not configured yet.');
   }
 }
 
@@ -61,11 +61,11 @@ async function connect() {
 
 async function refresh() {
   set('product-operator', LIVE_CONFIG.operator || '—');
-  set('product-vault', LIVE_CONFIG.v1Vault || 'Not deployed yet');
-  set('product-token', LIVE_CONFIG.v1WstDiem || 'Not deployed yet');
+  set('product-vault', LIVE_CONFIG.v1Vault || 'Prototype config not active');
+  set('product-token', LIVE_CONFIG.v1WstDiem || 'Prototype config not active');
   await refreshKeyStatus();
   if (!LIVE_CONFIG.v1Vault || !LIVE_CONFIG.v1WstDiem) {
-    set('product-por-solvent', 'Pending V1 deployment');
+    set('product-por-solvent', 'Pending key-dashboard balance-source config');
     set('product-por-liabilities', '—');
     set('product-por-backing', '—');
     set('product-por-operator-stake', '—');

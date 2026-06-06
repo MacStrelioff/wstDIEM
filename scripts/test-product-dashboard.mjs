@@ -5,12 +5,15 @@ const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf
 const config = readFileSync(new URL('../public/live-config.mjs', import.meta.url), 'utf8');
 
 const requiredCopy = [
-  'Live wstDIEM Product',
-  'Transferable wstDIEM',
+  'wstDIEM Live Base MVP',
+  'Live wstDIEM contracts are deployed on Base',
+  'Contracts deployed',
+  'Venice key-management experiment',
+  'Transferable wstDIEM key dashboard prototype',
   'Venice inference key',
   'Proof of reserves',
-  'Admin key remains server-only',
-  'User calls Venice directly',
+  'Venice ADMIN key remains server-only',
+  'users call Venice directly',
 ];
 
 for (const copy of requiredCopy) {

@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Interactive proof-of-concept for wstDIEM minting, mock Venice key provisioning, credit checks, and DIEM redemption cooldowns." />
-    <title>wstDIEM Proof of Concept</title>
+    <meta name="description" content="Live Base MVP for wstDIEM minting, DIEM staking, redemption initiation, proof-of-reserves, and Venice key-management experiments." />
+    <title>wstDIEM Live Base MVP</title>
     <link rel="stylesheet" href="/styles.css" />
     <script type="module" src="/app.mjs"></script>
     <script type="module" src="/product-app.mjs"></script>
@@ -13,41 +13,42 @@
     <main class="shell">
       <section class="hero" aria-labelledby="hero-title">
         <div>
-          <p class="eyebrow">wstDIEM POC</p>
-          <h1 id="hero-title">Mint wstDIEM, provision a Venice key, and start DIEM redemption.</h1>
+          <p class="eyebrow">wstDIEM Live Base MVP</p>
+          <h1 id="hero-title">Live wstDIEM contracts are deployed on Base.</h1>
           <p class="lede">
-            This is a working browser proof-of-concept using local simulated state, a mock DIEM vault,
-            and a mock Venice adapter. It exercises the product flow before any real contract deployment
-            or DIEM spend: deposit mock DIEM, mint mock wstDIEM, create a mock inference key, check mock
-            credits, then initiate mock redemption and view the 24-hour cooldown status.
+            The current MVP has real Base contracts for DIEM deposit, DIEM staking through the upstream
+            DIEM contract, wstDIEM minting, redemption initiation, and proof-of-reserves. A separate
+            historical mock simulator remains lower on the page for no-gas testing, and Venice key automation
+            remains an integration experiment until contract-staked DIEM attribution is proven with Venice.
           </p>
         </div>
-        <div class="hero-panel" aria-label="Demo mode">
-          <span class="pill">Base mock</span>
-          <span class="pill">No contract deployed</span>
-          <span class="pill">No onchain txs</span>
-          <span class="pill">Mock Venice API</span>
+        <div class="hero-panel" aria-label="Live deployment status">
+          <span class="pill">Base mainnet</span>
+          <span class="pill">Contracts deployed</span>
+          <span class="pill">Onchain txs verified</span>
+          <span class="pill">Venice key integration gated</span>
         </div>
       </section>
 
       <section class="notice" id="notice" data-type="info" role="status" aria-live="polite">
-        Connect the demo wallet label, then run the local mock mint → key → credits → redeem flow.
+        Start with the live Base MVP section below. The browser-only mock simulator is kept later on the page for safe local experimentation.
       </section>
 
       <section class="panel stack live-product" aria-labelledby="product-title">
         <div class="panel-heading">
-          <p class="eyebrow small">Live wstDIEM Product</p>
-          <h2 id="product-title">Transferable wstDIEM with Venice inference keys</h2>
+          <p class="eyebrow small">Venice key-management experiment</p>
+          <h2 id="product-title">Transferable wstDIEM key dashboard prototype</h2>
           <p class="muted">
-            This V1 uses transferable wstDIEM plus an operator-staked Venice account. A server-side
-            Venice ADMIN key creates per-address INFERENCE keys, users call Venice directly with their
-            limited key, and the backend patches or revokes key limits from each address's wstDIEM balance.
-            User calls Venice directly; Admin key remains server-only.
+            This section demonstrates server-side Venice ADMIN key handling and per-address INFERENCE key
+            limits. It is not the live contract dashboard: users call Venice directly with limited keys,
+            while the backend patches or revokes key limits from a wstDIEM balance source. The server-side
+            Venice ADMIN key remains server-only. Contract-staked DIEM attribution still needs Venice-side
+            proof before this becomes production key automation.
           </p>
         </div>
 
         <div class="notice" id="product-notice" data-type="info" role="status" aria-live="polite">
-          Connect a wallet to use the product dashboard. V1 contract addresses appear here after deployment.
+          Use this as a key-management prototype. The actual deployed Base contracts and verified transactions are in the Live Base MVP section below.
         </div>
 
         <div class="button-row">
@@ -58,12 +59,12 @@
 
         <section class="layout compact">
           <div class="panel inner stack">
-            <h3>Product contracts</h3>
+            <h3>Key prototype configuration</h3>
             <dl class="metrics">
               <div><dt>Operator</dt><dd id="product-operator">—</dd></div>
-              <div><dt>V1 vault</dt><dd id="product-vault">Not deployed yet</dd></div>
-              <div><dt>V1 wstDIEM</dt><dd id="product-token">Not deployed yet</dd></div>
-              <div><dt>Transferability</dt><dd>Transferable wstDIEM</dd></div>
+              <div><dt>Balance source vault</dt><dd id="product-vault">Prototype config not active</dd></div>
+              <div><dt>Balance source token</dt><dd id="product-token">Prototype config not active</dd></div>
+              <div><dt>Transferability model</dt><dd>Transferable wstDIEM experiment</dd></div>
             </dl>
           </div>
           <div class="panel inner stack">
