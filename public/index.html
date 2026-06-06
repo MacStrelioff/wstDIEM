@@ -3,47 +3,321 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="A simple Vercel-ready web app for the wstDIEM project." />
-    <title>wstDIEM</title>
+    <meta name="description" content="Interactive proof-of-concept for wstDIEM minting, mock Venice key provisioning, credit checks, and DIEM redemption cooldowns." />
+    <title>wstDIEM Proof of Concept</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.mjs"></script>
+    <script type="module" src="/product-app.mjs"></script>
   </head>
   <body>
     <main class="shell">
       <section class="hero" aria-labelledby="hero-title">
-        <p class="eyebrow">wstDIEM</p>
-        <h1 id="hero-title">A simple web home for the wstDIEM project.</h1>
-        <p class="lede">
-          This starter app gives the repo a deployable Vercel front end today, with room to grow into
-          product docs, protocol explainers, dashboards, or account flows later.
-        </p>
-        <div class="actions" aria-label="Primary links">
-          <a href="https://github.com/MacStrelioff/wstDIEM" class="button primary">View GitHub Repo</a>
-          <a href="#next" class="button secondary">See next steps</a>
+        <div>
+          <p class="eyebrow">wstDIEM POC</p>
+          <h1 id="hero-title">Mint wstDIEM, provision a Venice key, and start DIEM redemption.</h1>
+          <p class="lede">
+            This is a working browser proof-of-concept using local simulated state, a mock DIEM vault,
+            and a mock Venice adapter. It exercises the product flow before any real contract deployment
+            or DIEM spend: deposit mock DIEM, mint mock wstDIEM, create a mock inference key, check mock
+            credits, then initiate mock redemption and view the 24-hour cooldown status.
+          </p>
+        </div>
+        <div class="hero-panel" aria-label="Demo mode">
+          <span class="pill">Base mock</span>
+          <span class="pill">No contract deployed</span>
+          <span class="pill">No onchain txs</span>
+          <span class="pill">Mock Venice API</span>
         </div>
       </section>
 
-      <section class="card-grid" aria-label="App highlights">
-        <article class="card">
-          <span class="dot" aria-hidden="true"></span>
-          <p>Vercel-ready static app scaffold with zero runtime dependencies.</p>
-        </article>
-        <article class="card">
-          <span class="dot" aria-hidden="true"></span>
-          <p>Responsive project landing page that works on desktop and mobile.</p>
-        </article>
-        <article class="card">
-          <span class="dot" aria-hidden="true"></span>
-          <p>Clean starter structure for future protocol docs, dashboards, or wallet UX.</p>
-        </article>
+      <section class="notice" id="notice" data-type="info" role="status" aria-live="polite">
+        Connect the demo wallet label, then run the local mock mint → key → credits → redeem flow.
       </section>
 
-      <section id="next" class="next-card" aria-labelledby="next-title">
-        <h2 id="next-title">Ready for iteration</h2>
-        <p>
-          The app is intentionally small: it builds locally with <code>npm run build</code> and can be
-          imported into Vercel directly from the GitHub repo. Future PRs can add branding, token copy,
-          analytics, contract-driven UI, or a richer app shell once the project direction is finalized.
-        </p>
+      <section class="panel stack live-product" aria-labelledby="product-title">
+        <div class="panel-heading">
+          <p class="eyebrow small">Live wstDIEM Product</p>
+          <h2 id="product-title">Transferable wstDIEM with Venice inference keys</h2>
+          <p class="muted">
+            This V1 uses transferable wstDIEM plus an operator-staked Venice account. A server-side
+            Venice ADMIN key creates per-address INFERENCE keys, users call Venice directly with their
+            limited key, and the backend patches or revokes key limits from each address's wstDIEM balance.
+            User calls Venice directly; Admin key remains server-only.
+          </p>
+        </div>
+
+        <div class="notice" id="product-notice" data-type="info" role="status" aria-live="polite">
+          Connect a wallet to use the product dashboard. V1 contract addresses appear here after deployment.
+        </div>
+
+        <div class="button-row">
+          <button id="product-connect" class="button primary" type="button">Connect product wallet</button>
+          <button id="product-refresh" class="button secondary" type="button">Refresh product state</button>
+          <span class="status-text">Connected wallet: <strong id="product-wallet">Not connected</strong></span>
+        </div>
+
+        <section class="layout compact">
+          <div class="panel inner stack">
+            <h3>Product contracts</h3>
+            <dl class="metrics">
+              <div><dt>Operator</dt><dd id="product-operator">—</dd></div>
+              <div><dt>V1 vault</dt><dd id="product-vault">Not deployed yet</dd></div>
+              <div><dt>V1 wstDIEM</dt><dd id="product-token">Not deployed yet</dd></div>
+              <div><dt>Transferability</dt><dd>Transferable wstDIEM</dd></div>
+            </dl>
+          </div>
+          <div class="panel inner stack">
+            <h3>Proof of reserves</h3>
+            <p class="muted">Proof of reserves tracks user liabilities against operator/vault DIEM backing.</p>
+            <dl class="metrics">
+              <div><dt>Solvent</dt><dd id="product-por-solvent">—</dd></div>
+              <div><dt>Liabilities</dt><dd id="product-por-liabilities">—</dd></div>
+              <div><dt>Total backing</dt><dd id="product-por-backing">—</dd></div>
+              <div><dt>Operator stake</dt><dd id="product-por-operator-stake">—</dd></div>
+              <div><dt>Vault liquid DIEM</dt><dd id="product-por-vault-liquid">—</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="layout compact">
+          <form id="product-deposit-form" class="panel inner stack">
+            <h3>1. Deposit DIEM</h3>
+            <label class="field"><span>DIEM amount</span><input id="product-deposit-amount" type="text" inputmode="decimal" value="0.001" /></label>
+            <button class="button primary" type="submit">Deposit DIEM → receive wstDIEM</button>
+          </form>
+          <form id="product-transfer-form" class="panel inner stack">
+            <h3>2. Transfer wstDIEM</h3>
+            <label class="field"><span>Recipient</span><input id="product-transfer-to" spellcheck="false" placeholder="0x..." /></label>
+            <label class="field"><span>wstDIEM amount</span><input id="product-transfer-amount" type="text" inputmode="decimal" value="0.0001" /></label>
+            <button class="button primary" type="submit">Transfer wstDIEM</button>
+          </form>
+          <form id="product-redeem-form" class="panel inner stack">
+            <h3>3. Redeem wstDIEM</h3>
+            <label class="field"><span>wstDIEM amount</span><input id="product-redeem-amount" type="text" inputmode="decimal" value="0.0001" /></label>
+            <button class="button primary" type="submit">Burn + request redemption</button>
+          </form>
+        </section>
+
+        <section class="panel inner stack">
+          <h3>Venice inference key</h3>
+          <p class="muted">
+            The backend creates a capped Venice inference key for this address. User calls Venice directly;
+            this app only creates, syncs, rotates, or revokes the key.
+          </p>
+          <div class="button-row">
+            <button id="product-key-create" class="button primary" type="button">Create Venice inference key</button>
+            <button id="product-key-sync" class="button secondary" type="button">Sync key limit</button>
+            <button id="product-key-revoke" class="button secondary" type="button">Revoke key</button>
+            <button id="product-key-copy" class="button secondary" type="button">Copy key</button>
+            <button id="product-venice-smoke" class="button secondary" type="button">Call Venice directly</button>
+          </div>
+          <dl class="metrics two">
+            <div><dt>Status</dt><dd id="product-key-status">—</dd></div>
+            <div><dt>DIEM epoch cap</dt><dd id="product-key-limit">—</dd></div>
+            <div><dt>Key ID</dt><dd id="product-key-id">—</dd></div>
+            <div><dt>Last 6</dt><dd id="product-key-last6">—</dd></div>
+          </dl>
+          <p class="status-text">API key is shown only once on create and then kept in this browser's local storage.</p>
+        </section>
+      </section>
+
+      <section class="panel stack live-product" aria-labelledby="live-title">
+        <div class="panel-heading">
+          <p class="eyebrow small">Live Base MVP</p>
+          <h2 id="live-title">Real wstDIEM contracts are deployed on Base</h2>
+          <p class="muted">
+            The live contract flow has been tested with dust DIEM: approve DIEM, deposit into the vault,
+            vault stakes DIEM through the upstream DIEM contract, vault mints non-transferable wstDIEM,
+            then redemption burns wstDIEM and initiates DIEM's 24-hour cooldown. Venice API key automation
+            is intentionally not live yet because contract-staked DIEM attribution still needs Venice-side proof.
+          </p>
+        </div>
+
+        <div class="notice" id="live-notice" data-type="info" role="status" aria-live="polite">
+          Live state is read from Base. Connect a wallet to transact, or refresh to read public vault state.
+        </div>
+
+        <div class="button-row">
+          <button id="live-connect" class="button primary" type="button">Connect live wallet</button>
+          <button id="live-refresh" class="button secondary" type="button">Refresh live state</button>
+          <span class="status-text">Connected wallet: <strong id="live-wallet">Not connected</strong></span>
+        </div>
+
+        <dl class="metrics two">
+          <div><dt>Vault</dt><dd><a id="live-vault-link" target="_blank" rel="noreferrer"><span id="live-vault-address">—</span></a></dd></div>
+          <div><dt>wstDIEM token</dt><dd><a id="live-wst-link" target="_blank" rel="noreferrer"><span id="live-wst-address">—</span></a></dd></div>
+          <div><dt>DIEM token</dt><dd><a id="live-diem-link" target="_blank" rel="noreferrer"><span id="live-diem-address">—</span></a></dd></div>
+          <div><dt>Invariant</dt><dd id="live-invariant">—</dd></div>
+        </dl>
+
+        <section class="layout compact">
+          <div class="panel inner stack">
+            <h3>Live wallet balances</h3>
+            <dl class="metrics">
+              <div><dt>DIEM</dt><dd id="live-diem-balance">—</dd></div>
+              <div><dt>wstDIEM</dt><dd id="live-wst-balance">—</dd></div>
+              <div><dt>DIEM allowance to vault</dt><dd id="live-allowance">—</dd></div>
+              <div><dt>wstDIEM supply</dt><dd id="live-wst-supply">—</dd></div>
+            </dl>
+          </div>
+
+          <div class="panel inner stack">
+            <h3>Live vault / DIEM state</h3>
+            <dl class="metrics">
+              <div><dt>Vault active stake</dt><dd id="live-active-stake">—</dd></div>
+              <div><dt>Total pending redeem</dt><dd id="live-total-pending">—</dd></div>
+              <div><dt>Total cooldown principal</dt><dd id="live-total-cooldown">—</dd></div>
+              <div><dt>Liquid claim reserve</dt><dd id="live-liquid-reserve">—</dd></div>
+              <div><dt>DIEM stakedInfos.amountStaked</dt><dd id="live-diem-staked">—</dd></div>
+              <div><dt>DIEM stakedInfos.coolDownAmount</dt><dd id="live-diem-cooldown-amount">—</dd></div>
+              <div><dt>DIEM stakedInfos.coolDownEnd</dt><dd id="live-diem-cooldown-end">—</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="layout compact">
+          <form id="live-approve-form" class="panel inner stack">
+            <h3>1. Approve DIEM</h3>
+            <label class="field"><span>DIEM amount</span><input id="live-approve-amount" type="text" inputmode="decimal" min="0.000000000000000001" step="0.000000000000000001" value="0.001" /></label>
+            <button class="button primary" type="submit">Approve DIEM</button>
+          </form>
+          <form id="live-deposit-form" class="panel inner stack">
+            <h3>2. Deposit / stake / mint</h3>
+            <label class="field"><span>DIEM amount</span><input id="live-deposit-amount" type="text" inputmode="decimal" min="0.000000000000000001" step="0.000000000000000001" value="0.001" /></label>
+            <button class="button primary" type="submit">Deposit + mint wstDIEM</button>
+          </form>
+          <form id="live-redeem-form" class="panel inner stack">
+            <h3>3. Request redeem</h3>
+            <label class="field"><span>wstDIEM amount</span><input id="live-redeem-amount" type="text" inputmode="decimal" min="0.000000000000000001" step="0.000000000000000001" value="0.0005" /></label>
+            <button class="button primary" type="submit">Burn + initiate cooldown</button>
+          </form>
+        </section>
+
+        <section class="panel inner stack">
+          <h3>Verified live E2E transactions</h3>
+          <dl class="metrics two">
+            <div><dt>Deploy vault</dt><dd><a id="live-deploy-link" target="_blank" rel="noreferrer"><span id="live-deploy-tx">—</span></a></dd></div>
+            <div><dt>Approve DIEM</dt><dd><a id="live-approve-link" target="_blank" rel="noreferrer"><span id="live-approve-tx">—</span></a></dd></div>
+            <div><dt>Deposit / stake / mint</dt><dd><a id="live-deposit-link" target="_blank" rel="noreferrer"><span id="live-deposit-tx">—</span></a></dd></div>
+            <div><dt>Redeem initiation</dt><dd><a id="live-redeem-link" target="_blank" rel="noreferrer"><span id="live-redeem-tx">—</span></a></dd></div>
+            <div><dt>Active batch</dt><dd id="live-batch-id">—</dd></div>
+            <div><dt>Batch amount</dt><dd id="live-batch-amount">—</dd></div>
+            <div><dt>Ready at</dt><dd id="live-ready-at">—</dd></div>
+          </dl>
+          <ul id="live-submitted-txs" class="live-txs"></ul>
+        </section>
+      </section>
+
+      <section class="notice" data-type="info">
+        The section below remains a local mock simulator for experimenting without wallet prompts or gas.
+      </section>
+
+      <section class="layout">
+        <aside class="panel stack" aria-labelledby="wallet-title">
+          <div class="panel-heading">
+            <p class="eyebrow small">Step 1</p>
+            <h2 id="wallet-title">Wallet + balances</h2>
+          </div>
+          <label class="field">
+            <span>Demo wallet label (not queried onchain)</span>
+            <input id="wallet-address" value="0x23bB05603A980C2915FC3B9D5D4a475993b666DE" spellcheck="false" />
+          </label>
+          <div class="button-row">
+            <button id="connect-wallet" class="button primary" type="button">Connect wallet</button>
+            <button id="reset-demo" class="button secondary" type="button">Reset</button>
+          </div>
+          <p id="wallet-status" class="status-text">Not connected</p>
+
+          <dl class="metrics">
+            <div><dt>Mock DIEM balance</dt><dd id="diem-balance">—</dd></div>
+            <div><dt>Mock wstDIEM balance</dt><dd id="wstdiem-balance">—</dd></div>
+            <div><dt>Pending redemption</dt><dd id="pending-redeem">—</dd></div>
+            <div><dt>Eligible inference</dt><dd id="eligible-diem">—</dd></div>
+          </dl>
+        </aside>
+
+        <section class="panel stack" aria-labelledby="deposit-title">
+          <div class="panel-heading">
+            <p class="eyebrow small">Step 2</p>
+            <h2 id="deposit-title">Mint wstDIEM</h2>
+          </div>
+          <p class="muted">
+            The mock vault transfers simulated DIEM from local browser state, stakes it in the mock vault,
+            and mints mock wstDIEM 1:1.
+          </p>
+          <form id="deposit-form" class="inline-form">
+            <label class="field">
+              <span>DIEM to deposit</span>
+              <input id="deposit-amount" type="text" inputmode="decimal" min="0.000001" step="0.000001" value="10" />
+            </label>
+            <button class="button primary" type="submit">Deposit + mint</button>
+          </form>
+          <dl class="metrics two">
+            <div><dt>Vault active stake</dt><dd id="vault-staked">—</dd></div>
+            <div><dt>Vault cooldown amount</dt><dd id="vault-cooldown">—</dd></div>
+            <div><dt>Cooldown duration</dt><dd id="cooldown-duration">—</dd></div>
+            <div><dt>Backing invariant</dt><dd id="invariant">—</dd></div>
+          </dl>
+        </section>
+      </section>
+
+      <section class="layout">
+        <section class="panel stack" aria-labelledby="key-title" id="key-card">
+          <div class="panel-heading">
+            <p class="eyebrow small">Step 3</p>
+            <h2 id="key-title">Inference key + DIEM credits</h2>
+          </div>
+          <p class="muted">
+            The mock Venice adapter creates one inference key for the wallet that holds wstDIEM and syncs
+            its EPOCH DIEM limit to the active non-redeeming wstDIEM balance.
+          </p>
+          <div class="button-row">
+            <button id="create-key" class="button primary" type="button">Create inference key</button>
+            <button id="check-key" class="button secondary" type="button">Check credits</button>
+          </div>
+          <dl class="metrics">
+            <div><dt>Status</dt><dd id="key-status">—</dd></div>
+            <div><dt>Key ID</dt><dd id="key-id">—</dd></div>
+            <div><dt>Key wallet</dt><dd id="key-wallet">—</dd></div>
+            <div><dt>DIEM limit</dt><dd id="key-limit">—</dd></div>
+            <div><dt>Credits remaining</dt><dd id="credits-remaining">—</dd></div>
+            <div><dt>Source</dt><dd id="key-source">—</dd></div>
+          </dl>
+        </section>
+
+        <section class="panel stack" aria-labelledby="redeem-title">
+          <div class="panel-heading">
+            <p class="eyebrow small">Step 4</p>
+            <h2 id="redeem-title">Initiate DIEM redemption</h2>
+          </div>
+          <p class="muted">
+            Redemption immediately removes wstDIEM from inference eligibility and starts a 24-hour DIEM
+            cooldown batch. This POC stops at cooldown status; the claim step comes after the cooldown.
+          </p>
+          <form id="redeem-form" class="inline-form">
+            <label class="field">
+              <span>wstDIEM to redeem</span>
+              <input id="redeem-amount" type="text" inputmode="decimal" min="0.000001" step="0.000001" value="2.5" />
+            </label>
+            <button class="button primary" type="submit">Redeem + start cooldown</button>
+          </form>
+          <dl class="metrics">
+            <div><dt>Cooldown status</dt><dd id="cooldown-status">—</dd></div>
+            <div><dt>Batch</dt><dd id="cooldown-batch">—</dd></div>
+            <div><dt>Amount</dt><dd id="cooldown-amount">—</dd></div>
+            <div><dt>Ready at</dt><dd id="cooldown-ready">—</dd></div>
+            <div><dt>Time remaining</dt><dd id="cooldown-remaining">—</dd></div>
+          </dl>
+          <p id="cooldown-message" class="status-text">—</p>
+        </section>
+      </section>
+
+      <section class="panel stack" aria-labelledby="events-title">
+        <div class="panel-heading">
+          <p class="eyebrow small">Audit trail</p>
+          <h2 id="events-title">POC event log</h2>
+        </div>
+        <ol id="event-log" class="event-log"></ol>
       </section>
     </main>
   </body>

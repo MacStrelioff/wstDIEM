@@ -6,7 +6,13 @@
   "scripts": {
     "dev": "vercel dev",
     "build": "node scripts/build.js",
-    "start": "node scripts/serve.js"
+    "start": "node scripts/serve.js",
+    "test:poc": "node scripts/test-poc.mjs",
+    "test:live-config": "node scripts/test-live-config.mjs",
+    "test:key-manager": "node scripts/test-key-manager.mjs",
+    "test:api-routes": "node scripts/test-api-routes.mjs",
+    "test:product-dashboard": "node scripts/test-product-dashboard.mjs",
+    "test": "npm run test:poc && npm run test:live-config && npm run test:key-manager && npm run test:api-routes && npm run test:product-dashboard"
   },
   "devDependencies": {}
 }

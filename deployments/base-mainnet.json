@@ -1,0 +1,111 @@
+{
+  "network": "base-mainnet",
+  "chainId": 8453,
+  "deployer": "0x23bB05603A980C2915FC3B9D5D4a475993b666DE",
+  "diem": "0xF4d97F2da56e8c3098f3a8D538DB630A2606a024",
+  "wstDiemVault": "0xE8C6F1672b578BF41e5b63903854611f9c8fbe3d",
+  "wstDiem": "0x45B37BeF8810eb27FEE2c1014B0Bfa8Bf74Ee708",
+  "deployTx": "0x8bf416b68290eec27d76effd4a60bfc4723550de8d66f5193bc3435fd7ea8f9a",
+  "e2e": {
+    "approveTx": "0x34ecdefd55da1c59f9cfd787b14ebde0fd93cd569affc86ae8666a1c56d36e7b",
+    "depositStakeMintTx": "0x8b38114c66d5b8b3eda6194fd84769dbdf068d9d01013f1cc19b1e4f20d4cb4c",
+    "redeemInitiationTx": "0xb2b2ba24b58efe3d43735a495481c026cc9bf58767d1c064eb02094e9c77f222",
+    "depositAmountDiemWei": "1000000000000000",
+    "depositAmountDiem": "0.001",
+    "redeemAmountDiemWei": "500000000000000",
+    "redeemAmountDiem": "0.0005",
+    "redeemBatchId": 1,
+    "readyAtUnix": 1780861853,
+    "readyAtUtc": "2026-06-07T19:50:53Z"
+  },
+  "postE2eState": {
+    "walletWstDiemWei": "500000000000000",
+    "vaultActiveStakeWei": "500000000000000",
+    "vaultPendingRedeemWei": "500000000000000",
+    "vaultCooldownPrincipalWei": "500000000000000",
+    "diemStakedInfosVault": {
+      "amountStakedWei": "500000000000000",
+      "coolDownEnd": 1780861853,
+      "coolDownAmountWei": "500000000000000"
+    },
+    "accountingInvariantHolds": true
+  },
+  "blockExplorer": {
+    "vault": "https://base.blockscout.com/address/0xE8C6F1672b578BF41e5b63903854611f9c8fbe3d",
+    "wstDiem": "https://base.blockscout.com/address/0x45B37BeF8810eb27FEE2c1014B0Bfa8Bf74Ee708",
+    "deployTx": "https://base.blockscout.com/tx/0x8bf416b68290eec27d76effd4a60bfc4723550de8d66f5193bc3435fd7ea8f9a",
+    "approveTx": "https://base.blockscout.com/tx/0x34ecdefd55da1c59f9cfd787b14ebde0fd93cd569affc86ae8666a1c56d36e7b",
+    "depositStakeMintTx": "https://base.blockscout.com/tx/0x8b38114c66d5b8b3eda6194fd84769dbdf068d9d01013f1cc19b1e4f20d4cb4c",
+    "redeemInitiationTx": "https://base.blockscout.com/tx/0xb2b2ba24b58efe3d43735a495481c026cc9bf58767d1c064eb02094e9c77f222",
+    "operatorStakedV1Vault": "https://base.blockscout.com/address/0xea74b97c3660E400f90826130560926b25053a77",
+    "operatorStakedV1WstDiem": "https://base.blockscout.com/address/0x434dF5B0829De7B0E558D904ab96E29737D9c317",
+    "operatorStakedV1DeployTx": "https://base.blockscout.com/tx/0xafe78175bbdf7ff94dacdb7c2bb0025802f8c9259f4f28007250a33f25fcf800",
+    "operatorStakedV1_approveDepositTx": "https://base.blockscout.com/tx/0xfcfab149a922f7382d07da129657dc521a84ddbb25e1997f45d12a871d6f1062",
+    "operatorStakedV1_depositMintTx": "https://base.blockscout.com/tx/0x2f166403522b301344b39e082b82de6e85274a245315445645aeb3e325ddc5a8",
+    "operatorStakedV1_transferBeforeKeyTx": "https://base.blockscout.com/tx/0xde765aa1c8da639260657db67ac2579bd68d10bb947a8ef9db7a1f2cfa5d17b9",
+    "operatorStakedV1_requestRedeemTx": "https://base.blockscout.com/tx/0x675da6e33470e3943a7bdbb7298a946c397f3749cc29faa4d33eb65d5d09deea",
+    "operatorStakedV1_approveFundTx": "https://base.blockscout.com/tx/0x7c579ba5836b3e42e8094be832e17cf95a9ea4d62a2e4cc5bf71211043028c6a",
+    "operatorStakedV1_fundRedemptionTx": "https://base.blockscout.com/tx/0xf9f9fbbc5bdb41e1cabdee47e082e067dfccca2763586bc6c749d9679598c97b",
+    "operatorStakedV1_transferAfterKeyTx": "https://base.blockscout.com/tx/0xdef7d7ae27431c8047d8f010d77a36be12e03c58a8d03fefd587b30ebca552e1"
+  },
+  "notes": [
+    "V1 token is non-transferable to avoid same-epoch Venice allowance double-spend.",
+    "V1 vault supports one active cooldown batch at a time to avoid resetting DIEM's single cooldown bucket.",
+    "Venice admin-key attribution for contract-staked DIEM is still the critical external integration gate."
+  ],
+  "operator": "0x23bB05603A980C2915FC3B9D5D4a475993b666DE",
+  "operatorStakedV1": {
+    "vault": "0xea74b97c3660E400f90826130560926b25053a77",
+    "wstDiem": "0x434dF5B0829De7B0E558D904ab96E29737D9c317",
+    "deployTx": "0xafe78175bbdf7ff94dacdb7c2bb0025802f8c9259f4f28007250a33f25fcf800",
+    "operator": "0x23bB05603A980C2915FC3B9D5D4a475993b666DE",
+    "notes": [
+      "V1 wstDIEM is transferable.",
+      "Venice inference keys are created/limited by a server-side ADMIN key and patched from wstDIEM balances.",
+      "DIEM attribution is operator-staked for V1; proof-of-reserves includes operator stake, operator liquid DIEM, vault liquid DIEM, and pending redemption liabilities."
+    ],
+    "e2e": {
+      "depositAmountDiemWei": "2000000000000000",
+      "depositAmountDiem": "0.002",
+      "transferBeforeKeyWei": "250000000000000",
+      "transferBeforeKeyDiem": "0.00025",
+      "redeemAmountWei": "500000000000000",
+      "redeemAmountDiem": "0.0005",
+      "secondTransferAfterKeyWei": "50000000000000",
+      "secondTransferAfterKeyDiem": "0.00005",
+      "redemptionRequestId": 1,
+      "readyAtUnix": 1780867533,
+      "readyAtUtc": "2026-06-07T21:25:33Z",
+      "approveDepositTx": "0xfcfab149a922f7382d07da129657dc521a84ddbb25e1997f45d12a871d6f1062",
+      "depositMintTx": "0x2f166403522b301344b39e082b82de6e85274a245315445645aeb3e325ddc5a8",
+      "transferBeforeKeyTx": "0xde765aa1c8da639260657db67ac2579bd68d10bb947a8ef9db7a1f2cfa5d17b9",
+      "requestRedeemTx": "0x675da6e33470e3943a7bdbb7298a946c397f3749cc29faa4d33eb65d5d09deea",
+      "approveFundTx": "0x7c579ba5836b3e42e8094be832e17cf95a9ea4d62a2e4cc5bf71211043028c6a",
+      "fundRedemptionTx": "0xf9f9fbbc5bdb41e1cabdee47e082e067dfccca2763586bc6c749d9679598c97b",
+      "transferAfterKeyTx": "0xdef7d7ae27431c8047d8f010d77a36be12e03c58a8d03fefd587b30ebca552e1",
+      "veniceInferenceKeyId": "4f0bb3f5-017f-4c8d-8c82-35a1fe9ad720",
+      "veniceInitialLimitDiem": "0.001",
+      "veniceUsageAfterSmokeDiem": "0.0003",
+      "venicePatchedLimitAfterTransferDiem": "0.00096",
+      "veniceKeyFinalStatus": "revoked"
+    },
+    "postE2eState": {
+      "userWstDiemWei": "1200000000000000",
+      "recipientWstDiemWei": "300000000000000",
+      "tokenSupplyWei": "1500000000000000",
+      "pendingRedeemWei": "500000000000000",
+      "proofOfReserves": {
+        "wstDiemSupplyWei": "1500000000000000",
+        "pendingRedeemPrincipalWei": "500000000000000",
+        "operatorActiveStakeWei": "100000000000000000",
+        "operatorCooldownAmountWei": "0",
+        "operatorLiquidDiemWei": "10031040000000000",
+        "vaultLiquidDiemWei": "2500000000000000",
+        "totalBackingWei": "112531040000000000",
+        "totalLiabilitiesWei": "2000000000000000",
+        "solvent": true
+      },
+      "veniceActiveKeysAfterCleanup": "1 ADMIN key only"
+    }
+  }
+}
