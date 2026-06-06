@@ -1,11 +1,12 @@
 # wstDIEM
 
-A lightweight, Vercel-ready static web app for the wstDIEM project.
+A lightweight, Vercel-ready proof-of-concept web app for the wstDIEM project. The current app is an interactive mock E2E demo for the product flow: mint wstDIEM, create a mock Venice inference key for the wstDIEM holder, check DIEM credits, and initiate DIEM redemption into a 24-hour cooldown batch.
 
 ## Local development
 
 ```bash
 npm install
+npm run test:poc
 npm run build
 npm run start
 ```
@@ -17,6 +18,18 @@ If you have the Vercel CLI available, you can also run:
 ```bash
 npm run dev
 ```
+
+## Proof-of-concept scope
+
+The browser POC intentionally uses local mock state instead of real DIEM/Venice side effects. It validates the application state machine before spending real DIEM:
+
+- connect the demo Base wallet;
+- deposit mock DIEM and mint wstDIEM 1:1;
+- create one mock Venice inference key for the wallet that holds wstDIEM;
+- check the key's DIEM/day limit and remaining credits;
+- initiate redemption, reduce key credits immediately, and show the 24-hour cooldown status.
+
+The real-DIEM/Venice attribution test remains a later manual gate after mock and fork tests pass.
 
 ## Build
 

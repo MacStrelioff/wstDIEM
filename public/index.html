@@ -3,47 +3,140 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="A simple Vercel-ready web app for the wstDIEM project." />
-    <title>wstDIEM</title>
+    <meta name="description" content="Interactive proof-of-concept for wstDIEM minting, mock Venice key provisioning, credit checks, and DIEM redemption cooldowns." />
+    <title>wstDIEM Proof of Concept</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.mjs"></script>
   </head>
   <body>
     <main class="shell">
       <section class="hero" aria-labelledby="hero-title">
-        <p class="eyebrow">wstDIEM</p>
-        <h1 id="hero-title">A simple web home for the wstDIEM project.</h1>
-        <p class="lede">
-          This starter app gives the repo a deployable Vercel front end today, with room to grow into
-          product docs, protocol explainers, dashboards, or account flows later.
-        </p>
-        <div class="actions" aria-label="Primary links">
-          <a href="https://github.com/MacStrelioff/wstDIEM" class="button primary">View GitHub Repo</a>
-          <a href="#next" class="button secondary">See next steps</a>
+        <div>
+          <p class="eyebrow">wstDIEM POC</p>
+          <h1 id="hero-title">Mint wstDIEM, provision a Venice key, and start DIEM redemption.</h1>
+          <p class="lede">
+            This is a working browser proof-of-concept using a mock DIEM vault and mock Venice adapter.
+            It exercises the E2E product flow before spending real DIEM: deposit DIEM, mint wstDIEM,
+            create an inference key for the holder, check DIEM credits, then initiate redemption and view
+            the 24-hour cooldown status.
+          </p>
+        </div>
+        <div class="hero-panel" aria-label="Demo mode">
+          <span class="pill">Base mock</span>
+          <span class="pill">No real DIEM spend</span>
+          <span class="pill">Mock Venice API</span>
         </div>
       </section>
 
-      <section class="card-grid" aria-label="App highlights">
-        <article class="card">
-          <span class="dot" aria-hidden="true"></span>
-          <p>Vercel-ready static app scaffold with zero runtime dependencies.</p>
-        </article>
-        <article class="card">
-          <span class="dot" aria-hidden="true"></span>
-          <p>Responsive project landing page that works on desktop and mobile.</p>
-        </article>
-        <article class="card">
-          <span class="dot" aria-hidden="true"></span>
-          <p>Clean starter structure for future protocol docs, dashboards, or wallet UX.</p>
-        </article>
+      <section class="notice" id="notice" data-type="info" role="status" aria-live="polite">
+        Connect the demo wallet, then run the mint → key → credits → redeem flow.
       </section>
 
-      <section id="next" class="next-card" aria-labelledby="next-title">
-        <h2 id="next-title">Ready for iteration</h2>
-        <p>
-          The app is intentionally small: it builds locally with <code>npm run build</code> and can be
-          imported into Vercel directly from the GitHub repo. Future PRs can add branding, token copy,
-          analytics, contract-driven UI, or a richer app shell once the project direction is finalized.
-        </p>
+      <section class="layout">
+        <aside class="panel stack" aria-labelledby="wallet-title">
+          <div class="panel-heading">
+            <p class="eyebrow small">Step 1</p>
+            <h2 id="wallet-title">Wallet + balances</h2>
+          </div>
+          <label class="field">
+            <span>Demo wallet</span>
+            <input id="wallet-address" value="0x23bB05603A980C2915FC3B9D5D4a475993b666DE" spellcheck="false" />
+          </label>
+          <div class="button-row">
+            <button id="connect-wallet" class="button primary" type="button">Connect wallet</button>
+            <button id="reset-demo" class="button secondary" type="button">Reset</button>
+          </div>
+          <p id="wallet-status" class="status-text">Not connected</p>
+
+          <dl class="metrics">
+            <div><dt>DIEM wallet balance</dt><dd id="diem-balance">—</dd></div>
+            <div><dt>wstDIEM balance</dt><dd id="wstdiem-balance">—</dd></div>
+            <div><dt>Pending redemption</dt><dd id="pending-redeem">—</dd></div>
+            <div><dt>Eligible inference</dt><dd id="eligible-diem">—</dd></div>
+          </dl>
+        </aside>
+
+        <section class="panel stack" aria-labelledby="deposit-title">
+          <div class="panel-heading">
+            <p class="eyebrow small">Step 2</p>
+            <h2 id="deposit-title">Mint wstDIEM</h2>
+          </div>
+          <p class="muted">
+            The mock vault transfers DIEM from the connected wallet, stakes it, and mints wstDIEM 1:1.
+          </p>
+          <form id="deposit-form" class="inline-form">
+            <label class="field">
+              <span>DIEM to deposit</span>
+              <input id="deposit-amount" type="number" min="0.000001" step="0.000001" value="10" />
+            </label>
+            <button class="button primary" type="submit">Deposit + mint</button>
+          </form>
+          <dl class="metrics two">
+            <div><dt>Vault active stake</dt><dd id="vault-staked">—</dd></div>
+            <div><dt>Vault cooldown amount</dt><dd id="vault-cooldown">—</dd></div>
+            <div><dt>Cooldown duration</dt><dd id="cooldown-duration">—</dd></div>
+            <div><dt>Backing invariant</dt><dd id="invariant">—</dd></div>
+          </dl>
+        </section>
+      </section>
+
+      <section class="layout">
+        <section class="panel stack" aria-labelledby="key-title" id="key-card">
+          <div class="panel-heading">
+            <p class="eyebrow small">Step 3</p>
+            <h2 id="key-title">Inference key + DIEM credits</h2>
+          </div>
+          <p class="muted">
+            The mock Venice adapter creates one inference key for the wallet that holds wstDIEM and syncs
+            its EPOCH DIEM limit to the active non-redeeming wstDIEM balance.
+          </p>
+          <div class="button-row">
+            <button id="create-key" class="button primary" type="button">Create inference key</button>
+            <button id="check-key" class="button secondary" type="button">Check credits</button>
+          </div>
+          <dl class="metrics">
+            <div><dt>Status</dt><dd id="key-status">—</dd></div>
+            <div><dt>Key ID</dt><dd id="key-id">—</dd></div>
+            <div><dt>Key wallet</dt><dd id="key-wallet">—</dd></div>
+            <div><dt>DIEM limit</dt><dd id="key-limit">—</dd></div>
+            <div><dt>Credits remaining</dt><dd id="credits-remaining">—</dd></div>
+            <div><dt>Source</dt><dd id="key-source">—</dd></div>
+          </dl>
+        </section>
+
+        <section class="panel stack" aria-labelledby="redeem-title">
+          <div class="panel-heading">
+            <p class="eyebrow small">Step 4</p>
+            <h2 id="redeem-title">Initiate DIEM redemption</h2>
+          </div>
+          <p class="muted">
+            Redemption immediately removes wstDIEM from inference eligibility and starts a 24-hour DIEM
+            cooldown batch. This POC stops at cooldown status; the claim step comes after the cooldown.
+          </p>
+          <form id="redeem-form" class="inline-form">
+            <label class="field">
+              <span>wstDIEM to redeem</span>
+              <input id="redeem-amount" type="number" min="0.000001" step="0.000001" value="2.5" />
+            </label>
+            <button class="button primary" type="submit">Redeem + start cooldown</button>
+          </form>
+          <dl class="metrics">
+            <div><dt>Cooldown status</dt><dd id="cooldown-status">—</dd></div>
+            <div><dt>Batch</dt><dd id="cooldown-batch">—</dd></div>
+            <div><dt>Amount</dt><dd id="cooldown-amount">—</dd></div>
+            <div><dt>Ready at</dt><dd id="cooldown-ready">—</dd></div>
+            <div><dt>Time remaining</dt><dd id="cooldown-remaining">—</dd></div>
+          </dl>
+          <p id="cooldown-message" class="status-text">—</p>
+        </section>
+      </section>
+
+      <section class="panel stack" aria-labelledby="events-title">
+        <div class="panel-heading">
+          <p class="eyebrow small">Audit trail</p>
+          <h2 id="events-title">POC event log</h2>
+        </div>
+        <ol id="event-log" class="event-log"></ol>
       </section>
     </main>
   </body>
