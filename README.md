@@ -1,6 +1,6 @@
 # wstDIEM
 
-A lightweight, Vercel-ready proof-of-concept web app for the wstDIEM project. The current app is an interactive mock E2E demo for the product flow: mint wstDIEM, create a mock Venice inference key for the wstDIEM holder, check DIEM credits, and initiate DIEM redemption into a 24-hour cooldown batch.
+A lightweight, Vercel-ready proof-of-concept web app for the wstDIEM project. The current app is an interactive mock E2E demo for the product flow: mint mock wstDIEM, create a mock Venice inference key for the wstDIEM holder, check mock DIEM credits, and initiate mock DIEM redemption into a 24-hour cooldown batch. It does not deploy contracts, query real wallet balances, or submit onchain transactions.
 
 ## Local development
 
@@ -21,7 +21,7 @@ npm run dev
 
 ## Proof-of-concept scope
 
-The browser POC intentionally uses local mock state instead of real DIEM/Venice side effects. It validates the application state machine before spending real DIEM:
+The browser POC intentionally uses local mock state instead of real DIEM/Venice side effects. It validates the application state machine before spending real DIEM. The displayed DIEM/wstDIEM values are simulated demo balances, not the real balance of the wallet address typed into the UI:
 
 - connect the demo Base wallet;
 - deposit mock DIEM and mint wstDIEM 1:1;

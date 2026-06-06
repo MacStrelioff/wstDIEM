@@ -76,7 +76,7 @@ export function connectWallet(state, address = DEMO_WALLET, { now = Date.now() }
     type: 'WALLET_CONNECTED',
     at: iso(now),
     wallet: next.wallet.address,
-    message: `Connected ${shortAddress(next.wallet.address)} to Base mock state.`,
+    message: `Connected ${shortAddress(next.wallet.address)} as a local POC wallet label. No onchain balance was queried.`,
   });
   return saveState(next);
 }

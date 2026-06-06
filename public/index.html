@@ -15,21 +15,22 @@
           <p class="eyebrow">wstDIEM POC</p>
           <h1 id="hero-title">Mint wstDIEM, provision a Venice key, and start DIEM redemption.</h1>
           <p class="lede">
-            This is a working browser proof-of-concept using a mock DIEM vault and mock Venice adapter.
-            It exercises the E2E product flow before spending real DIEM: deposit DIEM, mint wstDIEM,
-            create an inference key for the holder, check DIEM credits, then initiate redemption and view
-            the 24-hour cooldown status.
+            This is a working browser proof-of-concept using local simulated state, a mock DIEM vault,
+            and a mock Venice adapter. It exercises the product flow before any real contract deployment
+            or DIEM spend: deposit mock DIEM, mint mock wstDIEM, create a mock inference key, check mock
+            credits, then initiate mock redemption and view the 24-hour cooldown status.
           </p>
         </div>
         <div class="hero-panel" aria-label="Demo mode">
           <span class="pill">Base mock</span>
-          <span class="pill">No real DIEM spend</span>
+          <span class="pill">No contract deployed</span>
+          <span class="pill">No onchain txs</span>
           <span class="pill">Mock Venice API</span>
         </div>
       </section>
 
       <section class="notice" id="notice" data-type="info" role="status" aria-live="polite">
-        Connect the demo wallet, then run the mint → key → credits → redeem flow.
+        Connect the demo wallet label, then run the local mock mint → key → credits → redeem flow.
       </section>
 
       <section class="layout">
@@ -39,7 +40,7 @@
             <h2 id="wallet-title">Wallet + balances</h2>
           </div>
           <label class="field">
-            <span>Demo wallet</span>
+            <span>Demo wallet label (not queried onchain)</span>
             <input id="wallet-address" value="0x23bB05603A980C2915FC3B9D5D4a475993b666DE" spellcheck="false" />
           </label>
           <div class="button-row">
@@ -49,8 +50,8 @@
           <p id="wallet-status" class="status-text">Not connected</p>
 
           <dl class="metrics">
-            <div><dt>DIEM wallet balance</dt><dd id="diem-balance">—</dd></div>
-            <div><dt>wstDIEM balance</dt><dd id="wstdiem-balance">—</dd></div>
+            <div><dt>Mock DIEM balance</dt><dd id="diem-balance">—</dd></div>
+            <div><dt>Mock wstDIEM balance</dt><dd id="wstdiem-balance">—</dd></div>
             <div><dt>Pending redemption</dt><dd id="pending-redeem">—</dd></div>
             <div><dt>Eligible inference</dt><dd id="eligible-diem">—</dd></div>
           </dl>
@@ -62,7 +63,8 @@
             <h2 id="deposit-title">Mint wstDIEM</h2>
           </div>
           <p class="muted">
-            The mock vault transfers DIEM from the connected wallet, stakes it, and mints wstDIEM 1:1.
+            The mock vault transfers simulated DIEM from local browser state, stakes it in the mock vault,
+            and mints mock wstDIEM 1:1.
           </p>
           <form id="deposit-form" class="inline-form">
             <label class="field">
