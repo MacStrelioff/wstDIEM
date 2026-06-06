@@ -37,7 +37,7 @@ The live V1 product contracts are deployed on Base mainnet:
 
 Preview deployment tested with server-side Venice env:
 
-- `https://wstdiem-6dhjh7t03-agentic-work.vercel.app`
+- `https://wstdiem-p6y40e2ac-agentic-work.vercel.app`
 
 ### Verified live V1 E2E
 
