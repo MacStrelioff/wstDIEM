@@ -378,12 +378,9 @@ Flow:
 4. User can copy OpenAI-compatible examples:
 
 ```bash
-curl https://api.venice.ai/api/v1/chat/completions \
-  -H "Authorization: Bearer $VENICE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"model":"venice-uncensored","messages":[{"role":"user","content":"hello"}]}'
+# Include the user Venice bearer credential in the Authorization header.
+curl https://api.venice.ai/api/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"venice-uncensored","messages":[{"role":"user","content":"hello"}]}'
 ```
-
 5. App shows remaining DIEM allowance from `/billing/balance` if available.
 
 ### 4. Redeem / withdraw
@@ -434,6 +431,105 @@ See sync worker audit fields above.
 ### `redeem_batches_cache` (optional)
 
 The contract is source of truth, but caching batch status makes UI faster.
+
+## Testing plan before real DIEM
+
+Most of the MVP can be tested before risking real DIEM. The one gate that likely needs real DIEM or explicit Venice support is proving that Venice attributes a contract address's staked DIEM to the protocol admin account.
+
+### Layer 0: static checks and invariants
+
+Run these in CI for every implementation PR:
+
+- Solidity formatting/linting once contracts exist.
+- Unit tests for vault accounting, token restrictions, and event emission.
+- Invariant/property tests for:
+  - `wstDIEM.totalSupply + pendingRedeemPrincipal <= activeStake + cooldownAmount + liquidClaimReserve`;
+  - deposits mint exactly 1:1;
+  - redemption requests immediately remove inference eligibility;
+  - no user can claim more DIEM than they redeemed;
+  - non-transferable V1 `wstDIEM` cannot be transferred except through allowed mint/burn/vault paths.
+
+### Layer 1: local mock DIEM contract
+
+Use a local `MockDiem` that implements the DIEM staking surface needed by the vault:
+
+```solidity
+stake(uint256)
+initiateUnstake(uint256)
+unstake()
+stakedInfos(address)
+cooldownDuration()
+```
+
+The mock must reproduce the important DIEM behavior: multiple `initiateUnstake()` calls by the same address reset `coolDownEnd` for the full aggregate cooldown bucket. This catches the main redemption-batching bug without any mainnet DIEM.
+
+Test cases:
+
+1. deposit mock DIEM -> vault stakes -> mint `wstDIEM` 1:1;
+2. two users request redemption into one open batch -> one `initiateUnstake(total)` call;
+3. new redemption during cooldown goes to the next batch and does not reset the active batch;
+4. `completeUnstakeBatch()` cannot run before `readyAt`;
+5. after time-warp, `completeUnstakeBatch()` calls `unstake()` and users claim correct DIEM;
+6. key-eligibility view/API excludes pending redemption immediately.
+
+### Layer 2: Base mainnet fork with real DIEM bytecode, no real funds
+
+Use Foundry/Anvil or Hardhat against a forked Base RPC and the real DIEM contract address:
+
+```text
+DIEM = 0xf4d97f2da56e8c3098f3a8d538db630a2606a024
+```
+
+On the fork, fund test wallets with DIEM by using a local cheatcode such as ERC-20 `deal()` or by impersonating a DIEM holder. This does not move real DIEM on Base, but it exercises the actual deployed DIEM bytecode and storage layout.
+
+Fork tests should prove:
+
+1. vault can call the real DIEM `stake(amount)` successfully;
+2. `DIEM.stakedInfos(vault).amountStaked` increases by the deposited amount;
+3. `DIEM.initiateUnstake(batchAmount)` sets the vault cooldown bucket;
+4. another initiate during cooldown would reset the bucket, proving why batching is required;
+5. after `warp(coolDownEnd)`, vault can call real DIEM `unstake()` and receive DIEM back;
+6. vault accounting still satisfies the invariant across deposit -> redeem -> complete -> claim.
+
+### Layer 3: mocked Venice adapter
+
+Before real Venice integration, run the backend against a fake Venice adapter that records API-key operations:
+
+- create inference key for wallet;
+- update `consumptionLimits.diem` when `eligibleDiem(wallet)` changes;
+- reduce limit immediately after redemption request;
+- revoke/rotate keys;
+- enforce reserve-factor math;
+- ensure bearer keys never appear in logs, browser bundles, or on-chain events.
+
+This proves the app/backend state machine without spending DIEM or requiring live Venice allocation.
+
+### Layer 4: Venice API smoke test without staking funds, if supported
+
+With a real Venice admin key, run a throwaway-key smoke test using zero or tiny limits if the API accepts it:
+
+1. create an `INFERENCE` key;
+2. patch its `consumptionLimits.diem`;
+3. fetch key metadata;
+4. delete/revoke the key;
+5. verify no raw key material is logged.
+
+This validates request payloads and auth separately from DIEM staking attribution.
+
+### Final real-DIEM E2E gate
+
+After Layers 0-4 pass, run one final E2E with the smallest practical amount of real DIEM:
+
+1. Deploy contracts on Base.
+2. Deposit DIEM through the app.
+3. Verify `stakedInfos(vault).amountStaked` increased.
+4. Verify the protocol Venice admin key sees matching DIEM allocation in `/billing/balance`.
+5. Create a user inference key with `consumptionLimits.diem = user wstDIEM balance`.
+6. Make a small Venice inference call with the user key.
+7. Request redemption.
+8. Verify the user's key allowance decreases.
+9. Wait `DIEM.cooldownDuration()` and complete the unstake batch.
+10. Claim DIEM.
 
 ## Implementation phases
 
