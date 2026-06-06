@@ -14,10 +14,13 @@ const SELECTORS = {
   activeCooldownStatus: '0xc6ecba8d',
   accountingInvariantHolds: '0xb6ad264f',
   pendingRedeemPrincipal: '0x849d8712',
+  completeUnstakeBatch: '0x39d7e714',
+  claimRedeemed: '0x7dbddaae',
   stakedInfos: '0x9503b15c',
 };
 
 let account = '';
+let activeBatchId = 0n;
 
 const $ = (id) => document.getElementById(id);
 const set = (id, value) => { const el = $(id); if (el) el.textContent = value; };
@@ -38,7 +41,16 @@ export function initLiveProduct() {
   });
   $('live-redeem-form')?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    await sendAmountTx('requestRedeem', LIVE_CONFIG.vault, SELECTORS.requestRedeem + encodeUint(parseDiem($('live-redeem-amount').value)), 'Redemption initiation transaction submitted.');
+    await sendAmountTx('requestRedeem', LIVE_CONFIG.vault, SELECTORS.requestRedeem + encodeUint(parseDiem($('live-redeem-amount').value)), 'Redemption started. Wait for the cooldown, then complete unstake and claim DIEM.');
+  });
+  $('live-complete-unstake')?.addEventListener('click', async () => {
+    const batchId = getBatchIdForAction();
+    await sendSimpleTx('completeUnstakeBatch', LIVE_CONFIG.vault, SELECTORS.completeUnstakeBatch + encodeUint(batchId), 'Unstake completion submitted. After it confirms, claim DIEM for the same batch.');
+  });
+  $('live-claim-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const batchId = parseBatchId($('live-claim-batch-id')?.value || activeBatchId || '0');
+    await sendSimpleTx('claimRedeemed', LIVE_CONFIG.vault, SELECTORS.claimRedeemed + encodeUint(batchId), 'DIEM claim submitted.');
   });
   refreshLiveState().catch((error) => setLiveNotice(error.message, 'error'));
 }
@@ -99,22 +111,30 @@ async function refreshLiveState() {
     ethCall(reader, LIVE_CONFIG.diem, SELECTORS.stakedInfos + encodeAddress(LIVE_CONFIG.vault)),
   ]);
 
-  set('live-diem-balance', `${formatDiem(readUint(diemBal, 0))} DIEM`);
-  set('live-wst-balance', `${formatDiem(readUint(wstBal, 0))} wstDIEM`);
+  if (account) {
+    set('live-diem-balance', `${formatDiem(readUint(diemBal, 0))} DIEM`);
+    set('live-wst-balance', `${formatDiem(readUint(wstBal, 0))} wstDIEM`);
+    set('live-allowance', `${formatDiem(readUint(allowance, 0))} DIEM`);
+  } else {
+    set('live-diem-balance', 'Connect wallet');
+    set('live-wst-balance', 'Connect wallet');
+    set('live-allowance', 'Connect wallet');
+  }
   set('live-wst-supply', `${formatDiem(readUint(wstSupply, 0))} wstDIEM`);
-  set('live-allowance', `${formatDiem(readUint(allowance, 0))} DIEM`);
   set('live-active-stake', `${formatDiem(readUint(activeStake, 0))} DIEM`);
   set('live-total-pending', `${formatDiem(readUint(totalPending, 0))} DIEM`);
   set('live-total-cooldown', `${formatDiem(readUint(totalCooldown, 0))} DIEM`);
   set('live-liquid-reserve', `${formatDiem(readUint(liquidReserve, 0))} DIEM`);
   set('live-invariant', readBool(invariant) ? 'true' : 'false');
 
-  const batchId = readUint(activeStatus, 0);
+  activeBatchId = readUint(activeStatus, 0);
   const batchAmount = readUint(activeStatus, 1);
   const readyAt = readUint(activeStatus, 2);
-  set('live-batch-id', batchId ? `#${batchId}` : '—');
+  set('live-batch-id', activeBatchId ? `#${activeBatchId}` : '—');
   set('live-batch-amount', `${formatDiem(batchAmount)} DIEM`);
-  set('live-ready-at', readyAt ? new Date(Number(readyAt) * 1000).toISOString() : '—');
+  set('live-ready-at', readyAt ? new Date(Number(readyAt) * 1000).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—');
+  const claimInput = $('live-claim-batch-id');
+  if (claimInput && activeBatchId) claimInput.value = activeBatchId.toString();
 
   set('live-diem-staked', `${formatDiem(readUint(stakedInfo, 0))} DIEM`);
   set('live-diem-cooldown-end', readUint(stakedInfo, 1) ? new Date(Number(readUint(stakedInfo, 1)) * 1000).toISOString() : '—');
@@ -122,12 +142,17 @@ async function refreshLiveState() {
 }
 
 async function sendAmountTx(label, to, data, successMessage) {
+  await sendSimpleTx(label, to, data, successMessage);
+}
+
+async function sendSimpleTx(label, to, data, successMessage) {
   if (!window.ethereum) throw new Error('No injected wallet available for live transactions.');
   await ensureBase();
   if (!account) await connectWallet();
   const tx = await window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from: account, to, data }] });
   addLiveTx(label, tx);
   setLiveNotice(`${successMessage} ${tx}`, 'success');
+  await refreshLiveState().catch(() => {});
 }
 
 async function ethCall(reader, to, data) {
@@ -203,6 +228,18 @@ function parseDiem(value) {
   const whole = BigInt(wholeRaw || '0') * 10n ** 18n;
   const frac = BigInt((fracRaw + '0'.repeat(18)).slice(0, 18));
   return whole + frac;
+}
+
+function parseBatchId(value) {
+  const normalized = String(value || '').replace(/^#/, '').trim();
+  const batchId = BigInt(normalized || '0');
+  if (batchId <= 0n) throw new Error('Enter a redemption batch number.');
+  return batchId;
+}
+
+function getBatchIdForAction() {
+  if (activeBatchId > 0n) return activeBatchId;
+  return parseBatchId($('live-claim-batch-id')?.value || '0');
 }
 
 function readUint(hex, index) {

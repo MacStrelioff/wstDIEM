@@ -180,6 +180,78 @@ h3 {
   text-decoration: underline;
 }
 
+.user-app .simple-hero {
+  grid-template-columns: 1fr;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 18px 0;
+}
+
+.action-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.action-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--teal));
+  opacity: 0.8;
+}
+
+.card-topline {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.card-topline .eyebrow { margin: 0; }
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--text);
+  color: #090a10;
+  font-weight: 900;
+}
+
+.compact-metrics { margin-top: 4px; }
+
+.secret-value {
+  font-family: "SF Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.82rem;
+}
+
+.details-panel { margin-top: 20px; }
+
+.detail-metrics dd,
+.detail-metrics a {
+  font-family: "SF Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.86rem;
+  color: var(--teal);
+}
+
+.details-panel a {
+  color: var(--teal);
+  text-decoration: none;
+}
+
+.details-panel a:hover {
+  text-decoration: underline;
+}
+
 .live-txs {
   display: grid;
   gap: 8px;
@@ -326,6 +398,7 @@ dd {
 @media (max-width: 900px) {
   .hero,
   .layout,
+  .flow-grid,
   .metrics.two,
   .event-log li { grid-template-columns: 1fr; }
   .hero-panel { flex-direction: row; flex-wrap: wrap; }
