@@ -63,6 +63,7 @@ async function refresh() {
   set('product-operator', LIVE_CONFIG.operator || '—');
   set('product-vault', LIVE_CONFIG.v1Vault || 'Prototype config not active');
   set('product-token', LIVE_CONFIG.v1WstDiem || 'Prototype config not active');
+  await refreshUserWstDiemBalance();
   await refreshKeyStatus();
   if (!LIVE_CONFIG.v1Vault || !LIVE_CONFIG.v1WstDiem) {
     set('product-por-solvent', 'Pending key-dashboard balance-source config');
@@ -122,6 +123,19 @@ async function effectiveWstDiemWei() {
   return BigInt(result).toString();
 }
 
+async function refreshUserWstDiemBalance() {
+  if (!state.wallet) {
+    set('product-key-wst-balance', 'Connect wallet');
+    return;
+  }
+  try {
+    const wei = await effectiveWstDiemWei();
+    set('product-key-wst-balance', `${formatUnits(wei)} wstDIEM`);
+  } catch (error) {
+    set('product-key-wst-balance', 'Unable to read');
+  }
+}
+
 async function createKey() {
   if (!state.wallet) throw new Error('Connect wallet first');
   const body = { address: state.wallet };
@@ -138,6 +152,8 @@ async function createKey() {
 async function refreshKeyStatus() {
   if (!state.keyToken) {
     set('product-key-status', 'No key');
+    set('product-key-remaining', 'No key yet');
+    set('product-key-value', 'Create a key to show it once');
     return;
   }
   try {
@@ -154,7 +170,9 @@ async function syncKey() {
   if (!LIVE_CONFIG.v1WstDiem) body.effectiveWstDiemWei = '0';
   const result = await api('/api/key/sync', body);
   set('product-key-status', result.action);
-  set('product-key-limit', `${result.targetLimitDiem} DIEM / epoch`);
+  const limitText = `${result.targetLimitDiem} DIEM / epoch`;
+  set('product-key-limit', limitText);
+  set('product-key-remaining', limitText);
   if (result.action === 'revoked') {
     state.keyToken = '';
     state.apiKey = '';
@@ -202,9 +220,12 @@ async function api(path, body) {
 
 function renderKey(result, status) {
   set('product-key-status', status || result.status || '—');
-  set('product-key-limit', result.targetLimitDiem ? `${result.targetLimitDiem} DIEM / epoch` : result.limitDiem != null ? `${result.limitDiem} DIEM / epoch` : '—');
+  const limitText = result.targetLimitDiem ? `${result.targetLimitDiem} DIEM / epoch` : result.limitDiem != null ? `${result.limitDiem} DIEM / epoch` : '—';
+  set('product-key-limit', limitText);
+  set('product-key-remaining', limitText === '—' ? 'No key yet' : limitText);
   set('product-key-id', result.veniceKeyId || '—');
   set('product-key-last6', result.keyLast6 || '—');
+  set('product-key-value', state.apiKey || 'Stored key not available after refresh');
 }
 
 function notice(message) { set('product-notice', message); }
