@@ -35,3 +35,7 @@ Import this repository in Vercel. The included `vercel.json` sets:
 - Clean URLs: enabled
 
 The app does not require environment variables for the current landing page.
+
+## Project planning
+
+- [wstDIEM Protocol Plan](docs/wstdiem-protocol-plan.md) — architecture and phased roadmap for wrapping staked Venice DIEM and syncing inference allowance to `wstDIEM` balances.
