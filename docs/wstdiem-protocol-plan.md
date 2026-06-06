@@ -154,7 +154,9 @@ Yes — the MVP should be tested mostly before using real DIEM:
 2. **Base mainnet fork tests:** run Foundry/Anvil or Hardhat against a forked Base RPC and the real DIEM contract at `0xf4d97f2da56e8c3098f3a8d538db630a2606a024`. Use local fork cheatcodes/impersonation to fund test wallets with DIEM. This exercises the real deployed DIEM bytecode without moving real DIEM.
 3. **Mocked Venice adapter tests:** fake Venice key create/update/delete calls and assert `consumptionLimits.diem` tracks active non-redeeming `wstDIEM` balances.
 4. **Venice API smoke test:** with a real Venice admin key, create/patch/delete a throwaway inference key using zero or tiny limits if the API allows it. This validates request payloads without staking funds.
-5. **Final dust-size real-DIEM E2E:** only after the layers above pass, use the smallest practical DIEM amount to prove the unresolved production gate: contract-staked DIEM appears in the protocol admin key's `/billing/balance.diemEpochAllocation`.
+5. **Final dust-size real-DIEM E2E:** defer this manual test until local mock/fork tests prove balances, minting, redemption batching, and claims. Then use the smallest practical DIEM amount to prove the unresolved production gate: contract-staked DIEM appears in the protocol admin key's `/billing/balance.diemEpochAllocation`.
+
+Project decision: do not spend real DIEM on testing until mock/fork tests prove the vault accounting, wstDIEM minting, and wstDIEM redemption flows work.
 
 See [wstDIEM MVP Architecture](wstdiem-mvp-architecture.md#testing-plan-before-real-diem) for the detailed layered test plan.
 

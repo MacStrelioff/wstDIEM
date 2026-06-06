@@ -518,7 +518,7 @@ This validates request payloads and auth separately from DIEM staking attributio
 
 ### Final real-DIEM E2E gate
 
-After Layers 0-4 pass, run one final E2E with the smallest practical amount of real DIEM:
+Defer this manual test until local mock/fork tests prove balances, minting, redemption batching, and claims. After Layers 0-4 pass, run one final E2E with the smallest practical amount of real DIEM:
 
 1. Deploy contracts on Base.
 2. Deposit DIEM through the app.
