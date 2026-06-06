@@ -80,7 +80,7 @@ Primary documentation references:
 
 Key doc facts:
 
-- Venice API uses Bearer API keys: `Authorization: Bearer ...`.
+- Venice API uses Bearer API keys: `Authorization: Bearer <api-key>`.
 - Venice API implements an OpenAI-compatible API under `https://api.venice.ai/api/v1`.
 - Pricing page states: `1 Diem = $1/day of compute`.
 - Pricing page payment options include staking DIEM: `Each Diem = $1/day of credits that refresh daily`.
@@ -99,6 +99,10 @@ Key doc facts:
   1. `GET /api_keys/generate_web3_key` returns a short-lived token.
   2. Wallet signs the raw token string with `personal_sign` semantics.
   3. `POST /api_keys/generate_web3_key` with `address`, `signature`, `token`, and `apiKeyType` creates the key.
+
+## Inherited DIEM contract/admin risks
+
+The DIEM/Venice contract audit notes that DIEM includes privileged minter/burner/admin roles and an externally controlled cooldown duration. wstDIEM cannot remove those upstream risks; it can only surface them and avoid adding new custody/key risks. The vault implementation should read `cooldownDuration()` dynamically and should not hard-code the 24-hour value as a permanent invariant.
 
 ## Important integration question: contract-staked DIEM attribution
 

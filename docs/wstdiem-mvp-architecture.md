@@ -59,7 +59,7 @@ flowchart TD
 
 | Contract | Purpose |
 | --- | --- |
-| `WstDiem` | ERC-20 receipt token minted/burned only by the vault. |
+| `WstDiem` | ERC-20-compatible receipt token minted/burned only by the vault. For V1, it should be non-transferable or transfer-restricted unless a protocol inference proxy/global epoch ledger is implemented. |
 | `WstDiemVault` | Holds/stakes DIEM, handles deposits, batched redemption requests, cooldown completion, and DIEM claims. |
 
 ### Deposit flow
@@ -190,6 +190,33 @@ eligibleDiem(user) = wstDIEM.balanceOf(user)
 
 Do not count pending redemption amounts as eligible inference capacity.
 
+### Critical V1 transferability decision
+
+A transferable `wstDIEM` token creates a same-epoch allowance double-spend problem if users can call Venice directly with their inference keys:
+
+```text
+1. Alice holds 100 wstDIEM and receives a 100 DIEM EPOCH key limit.
+2. Alice spends the full 100 DIEM allowance early in the UTC day.
+3. Alice transfers 100 wstDIEM to Bob before the epoch resets.
+4. A naive sync sets Bob's key limit to 100 DIEM, allowing another 100 DIEM of potential spend backed by the same stake.
+```
+
+For the MVP, choose one of these before implementation:
+
+| Option | Recommendation | Notes |
+| --- | --- | --- |
+| Non-transferable V1 `wstDIEM` | **Recommended** | Block normal ERC-20 transfers until the product has robust usage accounting. Mint on deposit and burn/escrow on redeem only. This makes `balanceOf(wallet)` a safe allowance source. |
+| Transferable with protocol API proxy | Possible later | Users call the protocol proxy, not Venice directly. The proxy enforces global per-epoch usage and prevents double-spend across transfers. More complex and less composable. |
+| Transferable with direct Venice keys only | **Not recommended for V1** | Key limits can lag transfers/redemptions and cannot claw back already-spent same-epoch allowance. |
+
+If V1 must expose a standard transferable ERC-20, then the docs/implementation need an additional per-epoch spent ledger and conservative limit formula before launch:
+
+```text
+availableLimit(wallet, epoch) = max(0, activeBalance(wallet) - alreadySpentByWallet(epoch) - protocolReserve)
+```
+
+Even that does not fully solve transfer-after-spend without either non-transferability, a protocol inference proxy, or a global epoch allocation scheduler.
+
 ## Venice API key provisioning
 
 ### Admin key model
@@ -213,7 +240,7 @@ If Venice cannot attribute contract-staked DIEM to an admin key, the integration
   - `apiKeyType: "INFERENCE"`
   - `description: "wstDIEM <wallet>"`
   - `limitPeriod: "EPOCH"`
-  - `consumptionLimit: { "diem": eligibleDiem }`
+  - `consumptionLimits: { "diem": eligibleDiem }`
 - Backend stores Venice key metadata and encrypted key material.
 - User can recreate/rotate a key, but rotation should be rate-limited.
 
@@ -252,7 +279,7 @@ Inputs:
 
 Output:
 
-- Venice API key `consumptionLimit.diem = eligibleDiem(wallet)` with `limitPeriod = EPOCH`
+- Venice API key `consumptionLimits.diem = eligibleDiem(wallet)` with `limitPeriod = EPOCH`
 
 Rules:
 
@@ -446,7 +473,7 @@ With a small amount of DIEM:
 2. Deposit DIEM through app.
 3. Verify `stakedInfos(vault).amountStaked` increased.
 4. Verify protocol Venice admin key sees matching DIEM allocation in `/billing/balance`.
-5. Create user inference key with `consumptionLimit.diem = user wstDIEM balance`.
+5. Create user inference key with `consumptionLimits.diem = user wstDIEM balance`.
 6. Make a Venice inference call with the user key.
 7. Request redemption.
 8. Verify user's key allowance decreases.
@@ -465,6 +492,18 @@ With a small amount of DIEM:
 - User can claim DIEM after the batch is completed.
 - Privy authentication prevents one wallet from reading or rotating another wallet's key.
 - No Venice admin key or user inference key is exposed in client bundles, GitHub, logs, or on-chain plaintext.
+- V1 transferability decision is explicit: either non-transferable receipt token or a protocol-enforced epoch usage ledger/proxy.
+
+## External DIEM/Venice trust risks
+
+wstDIEM inherits risks from Venice/DIEM contracts and APIs:
+
+- DIEM admin/minter-burner roles can affect the backing asset. A Venice admin or compromised role holder could mint/burn/alter DIEM supply or operational assumptions.
+- DIEM `cooldownDuration` is externally administered. If it changes from 24h, the vault UI and batch logic must read it dynamically rather than hard-code one day.
+- Venice API key semantics and DIEM account attribution are off-chain API dependencies. API behavior can change independently of the vault.
+- If Venice account-level daily allocation is lower than the sum of user key limits, user keys may fail even if their local key limit appears valid. The sync worker should compare aggregate active user limits to `/billing/balance.diemEpochAllocation` and apply a reserve factor.
+
+These are acceptable for an MVP only if surfaced clearly in UI/docs and covered by the real-DIEM E2E test.
 
 ## Known risk / required confirmation before production
 

@@ -44,18 +44,21 @@ Users can redeem `wstDIEM` back to DIEM. Redemption must respect the DIEM stakin
 ## Non-goals for MVP
 
 - No LP-held `wstDIEM` allowance yet. LP accounting is V2.
+- No fully transferable V1 `wstDIEM` unless paired with protocol-enforced epoch usage accounting.
 - No multiple simultaneous DIEM cooldown batches, because the DIEM contract only has one cooldown bucket per staking address.
 - No off-chain DIEM staking/custody.
 - No fully public on-chain storage of raw or encrypted bearer API keys.
 
 ## V1: wallet-held wstDIEM allowance
 
+Recommended V1 policy: make `wstDIEM` non-transferable or transfer-restricted until the protocol has a usage-aware inference proxy or global epoch accounting. That avoids same-day allowance double-spend caused by spend-then-transfer behavior.
+
 ```text
-eligibleDiem(wallet) = wstDIEM.balanceOf(wallet)
-veniceKeyLimit(wallet) = eligibleDiem(wallet)
+eligibleDiem(wallet) = activeNonRedeemingWstDiemBalance(wallet)
+veniceKeyLimit(wallet) = eligibleDiem(wallet) - protocolReserve
 ```
 
-When a user deposits DIEM, their `wstDIEM` balance rises and the sync worker increases their key limit. When a user transfers `wstDIEM` away or requests redemption, their active `wstDIEM` balance falls and the sync worker lowers their key limit.
+When a user deposits DIEM, their `wstDIEM` balance rises and the sync worker increases their key limit. When a user requests redemption, the vault burns/locks `wstDIEM` immediately and the sync worker lowers their key limit. If V1 permits transfers, transfer events must also trigger immediate limit reductions/increases and the implementation needs an epoch spent ledger to prevent already-spent allowance from following the token to a new wallet.
 
 ## V2: wallet + LP-held wstDIEM allowance
 
@@ -103,7 +106,7 @@ flowchart TD
 1. User authenticates with Privy.
 2. Backend verifies the Privy identity token and wallet ownership.
 3. Backend creates one Venice `INFERENCE` key for the wallet using the protocol Venice `ADMIN` key.
-4. Backend sets `consumptionLimit.diem` to the user's eligible `wstDIEM` balance with `limitPeriod = EPOCH`.
+4. Backend sets `consumptionLimits.diem` to the user's eligible `wstDIEM` balance with `limitPeriod = EPOCH`.
 5. Backend stores key metadata and encrypted key material.
 6. User copies the Venice key and uses it with `https://api.venice.ai/api/v1`.
 
@@ -162,3 +165,12 @@ With a small amount of DIEM:
 ## Primary integration risk
 
 The smart contract can stake DIEM on-chain. The open integration question is whether Venice can attribute a contract address's staked DIEM to a protocol Venice admin key, since contracts cannot sign the public Web3 key-generation challenge. The MVP assumes this can be linked or supported by Venice, and the first real-DIEM E2E test must prove it.
+
+## Remaining open questions before implementation
+
+1. **Contract-staked DIEM attribution:** can Venice link `stakedInfos(vault).amountStaked` to the protocol admin key's `diemEpochAllocation`?
+2. **V1 transfer policy:** will V1 make `wstDIEM` non-transferable/transfer-restricted, or should the app ship a protocol inference proxy/global epoch ledger from day one?
+3. **Exact Venice key-management payloads:** admin API docs use `consumptionLimits`; the implementation should smoke-test create/update/delete on a throwaway key before wiring production keys.
+4. **User key recoverability policy:** should raw user inference keys be recoverable from encrypted storage, or shown once with rotation-only recovery?
+5. **Operational reserve factor:** how much DIEM allocation should remain unassigned to user keys to absorb rounding, stale sync, already-spent usage, API lag, and account-level allocation changes?
+6. **DIEM admin-risk disclosure:** what UX copy should tell users that DIEM has privileged upstream roles and externally controlled cooldown parameters?
