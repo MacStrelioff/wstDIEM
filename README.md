@@ -72,4 +72,5 @@ The app does not require environment variables for the current landing page.
 
 - [wstDIEM Protocol Plan](docs/wstdiem-protocol-plan.md) — concise protocol overview and V1/V2 scope.
 - [wstDIEM MVP Architecture](docs/wstdiem-mvp-architecture.md) — full MVP design from DIEM deposit/stake through Venice inference usage and 24h redemption.
+- [Venice Admin Key and Operator-Staked Design](docs/venice-admin-key-and-operator-design.md) — working design for real Venice inference keys using an EOA/Safe admin account while vault attribution remains unproven.
 - [Venice DIEM Contract and API Research](docs/references/venice-diem-contract-and-api-research.md) — source-backed DIEM contract, on-chain transaction, and Venice API references.
