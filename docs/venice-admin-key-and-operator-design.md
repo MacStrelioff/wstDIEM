@@ -62,23 +62,31 @@ Using the minted Venice ADMIN key, we successfully:
 - deleted the throwaway key;
 - verified only the ADMIN key remained active.
 
-### Current billing state
+### Verified operator DIEM attribution
 
-With tiny VVV stake and a tiny direct `0.001 DIEM` stake, Venice billing currently returns:
+After the tiny `0.001 DIEM` direct stake returned no spendable billing allocation, the project/operator EOA staked an additional `0.099 DIEM` to reach Venice's documented `0.1 DIEM` spendability threshold:
+
+- Additional DIEM stake tx: `0xbee462505a3765a55cd689ba8834ecb4ccbc407e8d3ce0ce204eb4411331989a`
+- Direct operator DIEM staked: `0.1 DIEM`
+- Liquid DIEM left in the operator EOA after staking: `0.01253104 DIEM`
+
+Venice billing then immediately returned:
 
 ```json
 {
-  "canConsume": false,
-  "consumptionCurrency": null,
+  "canConsume": true,
+  "consumptionCurrency": "DIEM",
   "balances": {
-    "diem": null,
+    "diem": 0.1,
     "usd": null
   },
-  "diemEpochAllocation": 0
+  "diemEpochAllocation": 0.1
 }
 ```
 
-This means the Web3 admin-key path works, but spendable DIEM allocation has not been proven yet at the tiny test amount. Venice docs say DIEM usage requires at least `0.1` staked DIEM for any DIEM to be spendable, and allocation may refresh on epoch boundaries.
+A capped throwaway `INFERENCE` key was also created from the admin key, used for a direct Venice chat-completions request (`"OK"` response), and deleted. Cleanup verification showed only the Web3 ADMIN key remained active.
+
+This proves the operator EOA/Safe-staked V1 path works for real Venice inference keys once the Venice-attributed staking account has at least `0.1 DIEM` staked.
 
 ## Why a vault alone is not enough today
 
@@ -89,10 +97,10 @@ A contract vault has two separate problems:
    - The docs do not currently document EIP-1271 / smart-contract wallet verification.
    - A Solidity vault cannot produce an EOA private-key signature.
 
-2. **Venice attribution for vault-staked DIEM is unproven.**
+2. **Venice attribution for vault-staked DIEM is still unproven.**
    - The prototype vault has staked DIEM onchain.
-   - The EOA-minted Venice admin key still reports `diemEpochAllocation: 0`.
-   - This may be because the amount is below the `0.1 DIEM` threshold, because epoch refresh is pending, or because Venice only credits the Venice-authenticated account/staker.
+   - The EOA-minted Venice admin key reports `diemEpochAllocation: 0.1` only after the operator EOA directly staked `0.1 DIEM`.
+   - This proves EOA/operator attribution, but not vault attribution. Venice may only credit the Venice-authenticated account/staker unless they support delegated vault attribution or smart-contract wallet auth.
 
 A vault is still useful for custody/accounting, but a vault alone cannot currently mint/manage Venice API keys or prove Venice billing attribution.
 
@@ -347,8 +355,8 @@ For production, prefer Safe-controlled staking/custody over an EOA private key w
 
 ## Next gates
 
-1. Recheck billing after UTC epoch refresh for the direct `0.001 DIEM` stake.
-2. If still zero, decide whether to fund the `0.1 DIEM` documented spendability threshold.
-3. If `0.1 DIEM` direct EOA stake credits Venice billing, implement operator-staked V1.
-4. In parallel, ask Venice whether vault address attribution or EIP-1271 Web3 auth is supported.
+1. Implement operator-staked V1 backend key management against the proven Venice ADMIN key path.
+2. Update the vault/token design from non-transferable receipt toward transferable wstDIEM plus offchain key-limit reconciliation, if LP/lending compatibility is required.
+3. Build proof-of-reserves accounting for operator-staked DIEM, operator cooldown DIEM, operator liquid DIEM, and vault liquid DIEM.
+4. Ask Venice whether vault address attribution or EIP-1271 Web3 auth is supported.
 5. If vault attribution is confirmed, migrate from operator-staked V1 to vault-staked V2.
