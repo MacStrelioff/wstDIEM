@@ -13,11 +13,17 @@ assert.equal(LIVE_CONFIG.e2e.approveTx, deployment.e2e.approveTx);
 assert.equal(LIVE_CONFIG.e2e.depositStakeMintTx, deployment.e2e.depositStakeMintTx);
 assert.equal(LIVE_CONFIG.e2e.redeemInitiationTx, deployment.e2e.redeemInitiationTx);
 assert.equal(LIVE_CONFIG.e2e.readyAtUtc, deployment.e2e.readyAtUtc);
+assert.equal(LIVE_CONFIG.operator.toLowerCase(), deployment.operator.toLowerCase());
+assert.equal(LIVE_CONFIG.v1Vault.toLowerCase(), deployment.operatorStakedV1.vault.toLowerCase());
+assert.equal(LIVE_CONFIG.v1WstDiem.toLowerCase(), deployment.operatorStakedV1.wstDiem.toLowerCase());
 
 for (const [name, value] of Object.entries({
   diem: LIVE_CONFIG.diem,
   vault: LIVE_CONFIG.vault,
   wstDiem: LIVE_CONFIG.wstDiem,
+  operator: LIVE_CONFIG.operator,
+  v1Vault: LIVE_CONFIG.v1Vault,
+  v1WstDiem: LIVE_CONFIG.v1WstDiem,
   deployTx: LIVE_CONFIG.e2e.deployTx,
   approveTx: LIVE_CONFIG.e2e.approveTx,
   depositStakeMintTx: LIVE_CONFIG.e2e.depositStakeMintTx,
