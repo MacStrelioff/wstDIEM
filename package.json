@@ -1,0 +1,12 @@
+{
+  "name": "wstdiem",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A simple Vercel-ready static web app for the wstDIEM project.",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "node scripts/build.js",
+    "start": "node scripts/serve.js"
+  },
+  "devDependencies": {}
+}
