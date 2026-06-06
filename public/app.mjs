@@ -1,3 +1,4 @@
+import { initLiveProduct } from './live-app.mjs';
 import {
   COOLDOWN_SECONDS,
   DEMO_WALLET,
@@ -150,4 +151,5 @@ $('#redeem-form').addEventListener('submit', (event) => {
   }, `Initiated redemption for ${amount} DIEM and started the 24h cooldown.`);
 });
 
+initLiveProduct();
 render();

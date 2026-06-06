@@ -1,0 +1,46 @@
+{
+  "network": "base-mainnet",
+  "chainId": 8453,
+  "deployer": "0x23bB05603A980C2915FC3B9D5D4a475993b666DE",
+  "diem": "0xF4d97F2da56e8c3098f3a8D538DB630A2606a024",
+  "wstDiemVault": "0xE8C6F1672b578BF41e5b63903854611f9c8fbe3d",
+  "wstDiem": "0x45B37BeF8810eb27FEE2c1014B0Bfa8Bf74Ee708",
+  "deployTx": "0x8bf416b68290eec27d76effd4a60bfc4723550de8d66f5193bc3435fd7ea8f9a",
+  "e2e": {
+    "approveTx": "0x34ecdefd55da1c59f9cfd787b14ebde0fd93cd569affc86ae8666a1c56d36e7b",
+    "depositStakeMintTx": "0x8b38114c66d5b8b3eda6194fd84769dbdf068d9d01013f1cc19b1e4f20d4cb4c",
+    "redeemInitiationTx": "0xb2b2ba24b58efe3d43735a495481c026cc9bf58767d1c064eb02094e9c77f222",
+    "depositAmountDiemWei": "1000000000000000",
+    "depositAmountDiem": "0.001",
+    "redeemAmountDiemWei": "500000000000000",
+    "redeemAmountDiem": "0.0005",
+    "redeemBatchId": 1,
+    "readyAtUnix": 1780861853,
+    "readyAtUtc": "2026-06-07T19:50:53Z"
+  },
+  "postE2eState": {
+    "walletWstDiemWei": "500000000000000",
+    "vaultActiveStakeWei": "500000000000000",
+    "vaultPendingRedeemWei": "500000000000000",
+    "vaultCooldownPrincipalWei": "500000000000000",
+    "diemStakedInfosVault": {
+      "amountStakedWei": "500000000000000",
+      "coolDownEnd": 1780861853,
+      "coolDownAmountWei": "500000000000000"
+    },
+    "accountingInvariantHolds": true
+  },
+  "blockExplorer": {
+    "vault": "https://base.blockscout.com/address/0xE8C6F1672b578BF41e5b63903854611f9c8fbe3d",
+    "wstDiem": "https://base.blockscout.com/address/0x45B37BeF8810eb27FEE2c1014B0Bfa8Bf74Ee708",
+    "deployTx": "https://base.blockscout.com/tx/0x8bf416b68290eec27d76effd4a60bfc4723550de8d66f5193bc3435fd7ea8f9a",
+    "approveTx": "https://base.blockscout.com/tx/0x34ecdefd55da1c59f9cfd787b14ebde0fd93cd569affc86ae8666a1c56d36e7b",
+    "depositStakeMintTx": "https://base.blockscout.com/tx/0x8b38114c66d5b8b3eda6194fd84769dbdf068d9d01013f1cc19b1e4f20d4cb4c",
+    "redeemInitiationTx": "https://base.blockscout.com/tx/0xb2b2ba24b58efe3d43735a495481c026cc9bf58767d1c064eb02094e9c77f222"
+  },
+  "notes": [
+    "V1 token is non-transferable to avoid same-epoch Venice allowance double-spend.",
+    "V1 vault supports one active cooldown batch at a time to avoid resetting DIEM's single cooldown bucket.",
+    "Venice admin-key attribution for contract-staked DIEM is still the critical external integration gate."
+  ]
+}

@@ -33,6 +33,97 @@
         Connect the demo wallet label, then run the local mock mint → key → credits → redeem flow.
       </section>
 
+      <section class="panel stack live-product" aria-labelledby="live-title">
+        <div class="panel-heading">
+          <p class="eyebrow small">Live Base MVP</p>
+          <h2 id="live-title">Real wstDIEM contracts are deployed on Base</h2>
+          <p class="muted">
+            The live contract flow has been tested with dust DIEM: approve DIEM, deposit into the vault,
+            vault stakes DIEM through the upstream DIEM contract, vault mints non-transferable wstDIEM,
+            then redemption burns wstDIEM and initiates DIEM's 24-hour cooldown. Venice API key automation
+            is intentionally not live yet because contract-staked DIEM attribution still needs Venice-side proof.
+          </p>
+        </div>
+
+        <div class="notice" id="live-notice" data-type="info" role="status" aria-live="polite">
+          Live state is read from Base. Connect a wallet to transact, or refresh to read public vault state.
+        </div>
+
+        <div class="button-row">
+          <button id="live-connect" class="button primary" type="button">Connect live wallet</button>
+          <button id="live-refresh" class="button secondary" type="button">Refresh live state</button>
+          <span class="status-text">Connected wallet: <strong id="live-wallet">Not connected</strong></span>
+        </div>
+
+        <dl class="metrics two">
+          <div><dt>Vault</dt><dd><a id="live-vault-link" target="_blank" rel="noreferrer"><span id="live-vault-address">—</span></a></dd></div>
+          <div><dt>wstDIEM token</dt><dd><a id="live-wst-link" target="_blank" rel="noreferrer"><span id="live-wst-address">—</span></a></dd></div>
+          <div><dt>DIEM token</dt><dd><a id="live-diem-link" target="_blank" rel="noreferrer"><span id="live-diem-address">—</span></a></dd></div>
+          <div><dt>Invariant</dt><dd id="live-invariant">—</dd></div>
+        </dl>
+
+        <section class="layout compact">
+          <div class="panel inner stack">
+            <h3>Live wallet balances</h3>
+            <dl class="metrics">
+              <div><dt>DIEM</dt><dd id="live-diem-balance">—</dd></div>
+              <div><dt>wstDIEM</dt><dd id="live-wst-balance">—</dd></div>
+              <div><dt>DIEM allowance to vault</dt><dd id="live-allowance">—</dd></div>
+              <div><dt>wstDIEM supply</dt><dd id="live-wst-supply">—</dd></div>
+            </dl>
+          </div>
+
+          <div class="panel inner stack">
+            <h3>Live vault / DIEM state</h3>
+            <dl class="metrics">
+              <div><dt>Vault active stake</dt><dd id="live-active-stake">—</dd></div>
+              <div><dt>Total pending redeem</dt><dd id="live-total-pending">—</dd></div>
+              <div><dt>Total cooldown principal</dt><dd id="live-total-cooldown">—</dd></div>
+              <div><dt>Liquid claim reserve</dt><dd id="live-liquid-reserve">—</dd></div>
+              <div><dt>DIEM stakedInfos.amountStaked</dt><dd id="live-diem-staked">—</dd></div>
+              <div><dt>DIEM stakedInfos.coolDownAmount</dt><dd id="live-diem-cooldown-amount">—</dd></div>
+              <div><dt>DIEM stakedInfos.coolDownEnd</dt><dd id="live-diem-cooldown-end">—</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="layout compact">
+          <form id="live-approve-form" class="panel inner stack">
+            <h3>1. Approve DIEM</h3>
+            <label class="field"><span>DIEM amount</span><input id="live-approve-amount" type="text" inputmode="decimal" min="0.000000000000000001" step="0.000000000000000001" value="0.001" /></label>
+            <button class="button primary" type="submit">Approve DIEM</button>
+          </form>
+          <form id="live-deposit-form" class="panel inner stack">
+            <h3>2. Deposit / stake / mint</h3>
+            <label class="field"><span>DIEM amount</span><input id="live-deposit-amount" type="text" inputmode="decimal" min="0.000000000000000001" step="0.000000000000000001" value="0.001" /></label>
+            <button class="button primary" type="submit">Deposit + mint wstDIEM</button>
+          </form>
+          <form id="live-redeem-form" class="panel inner stack">
+            <h3>3. Request redeem</h3>
+            <label class="field"><span>wstDIEM amount</span><input id="live-redeem-amount" type="text" inputmode="decimal" min="0.000000000000000001" step="0.000000000000000001" value="0.0005" /></label>
+            <button class="button primary" type="submit">Burn + initiate cooldown</button>
+          </form>
+        </section>
+
+        <section class="panel inner stack">
+          <h3>Verified live E2E transactions</h3>
+          <dl class="metrics two">
+            <div><dt>Deploy vault</dt><dd><a id="live-deploy-link" target="_blank" rel="noreferrer"><span id="live-deploy-tx">—</span></a></dd></div>
+            <div><dt>Approve DIEM</dt><dd><a id="live-approve-link" target="_blank" rel="noreferrer"><span id="live-approve-tx">—</span></a></dd></div>
+            <div><dt>Deposit / stake / mint</dt><dd><a id="live-deposit-link" target="_blank" rel="noreferrer"><span id="live-deposit-tx">—</span></a></dd></div>
+            <div><dt>Redeem initiation</dt><dd><a id="live-redeem-link" target="_blank" rel="noreferrer"><span id="live-redeem-tx">—</span></a></dd></div>
+            <div><dt>Active batch</dt><dd id="live-batch-id">—</dd></div>
+            <div><dt>Batch amount</dt><dd id="live-batch-amount">—</dd></div>
+            <div><dt>Ready at</dt><dd id="live-ready-at">—</dd></div>
+          </dl>
+          <ul id="live-submitted-txs" class="live-txs"></ul>
+        </section>
+      </section>
+
+      <section class="notice" data-type="info">
+        The section below remains a local mock simulator for experimenting without wallet prompts or gas.
+      </section>
+
       <section class="layout">
         <aside class="panel stack" aria-labelledby="wallet-title">
           <div class="panel-heading">
@@ -69,7 +160,7 @@
           <form id="deposit-form" class="inline-form">
             <label class="field">
               <span>DIEM to deposit</span>
-              <input id="deposit-amount" type="number" min="0.000001" step="0.000001" value="10" />
+              <input id="deposit-amount" type="text" inputmode="decimal" min="0.000001" step="0.000001" value="10" />
             </label>
             <button class="button primary" type="submit">Deposit + mint</button>
           </form>
@@ -118,7 +209,7 @@
           <form id="redeem-form" class="inline-form">
             <label class="field">
               <span>wstDIEM to redeem</span>
-              <input id="redeem-amount" type="number" min="0.000001" step="0.000001" value="2.5" />
+              <input id="redeem-amount" type="text" inputmode="decimal" min="0.000001" step="0.000001" value="2.5" />
             </label>
             <button class="button primary" type="submit">Redeem + start cooldown</button>
           </form>
