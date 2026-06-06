@@ -89,10 +89,14 @@ async function ensureBase() {
 }
 
 async function refreshLiveState() {
-  const reader = window.ethereum || { request: rpcRequest };
+  const reader = { request: rpcRequest };
   if (window.ethereum && !account) {
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    account = accounts[0] || '';
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      account = accounts[0] || '';
+    } catch {
+      account = '';
+    }
   }
   set('live-wallet', account ? shortAddress(account) : 'Not connected');
 

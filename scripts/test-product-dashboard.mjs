@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
 const config = readFileSync(new URL('../public/live-config.mjs', import.meta.url), 'utf8');
+const liveApp = readFileSync(new URL('../public/live-app.mjs', import.meta.url), 'utf8');
+const keyApp = readFileSync(new URL('../public/product-app.mjs', import.meta.url), 'utf8');
 
 const requiredCopy = [
   'Use DIEM for Venice compute',
@@ -66,5 +68,9 @@ assert.ok(html.includes('/app.mjs'), 'live app module not loaded');
 assert.ok(config.includes('operator'), 'live config exposes operator address');
 assert.ok(config.includes('vault'), 'live config exposes vault address');
 assert.ok(config.includes('wstDiem'), 'live config exposes wstDIEM address');
+assert.ok(liveApp.includes('const reader = { request: rpcRequest };'), 'live reads should use public Base RPC, not injected wallet eth_call');
+assert.ok(!liveApp.includes('const reader = window.ethereum ||'), 'live reads must not route eth_call through window.ethereum');
+assert.ok(keyApp.includes("return rpcRequest('eth_call'"), 'key balance reads should use public Base RPC');
+assert.ok(!keyApp.includes("return request('eth_call'"), 'key balance reads must not route eth_call through window.ethereum');
 
 console.log('product dashboard smoke test passed');

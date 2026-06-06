@@ -37,7 +37,26 @@ async function request(method, params) {
 }
 
 async function ethCall(to, data) {
-  return request('eth_call', [{ to, data }, 'latest']);
+  return rpcRequest('eth_call', [{ to, data }, 'latest']);
+}
+
+async function rpcRequest(method, params) {
+  let lastError = null;
+  for (const rpcUrl of LIVE_CONFIG.rpcUrls) {
+    try {
+      const response = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+      });
+      const payload = await response.json();
+      if (payload.error) throw new Error(payload.error.message || 'RPC request failed');
+      return payload.result;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('All public Base RPC endpoints failed');
 }
 
 async function sendTx(to, data) {
